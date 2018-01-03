@@ -105,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
             {
                 filtered.add(b.toString());
                 Log.i("Added", b.getName());
+                //HeAra
             }
         }
         adapter=new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,filtered);
