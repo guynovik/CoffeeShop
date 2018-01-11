@@ -1,5 +1,6 @@
 package com.example.guy.projectbagrut;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -89,6 +90,8 @@ public class MainActivity extends AppCompatActivity {
                         Toast.LENGTH_SHORT).show();
                 screen(String.valueOf((spinner1.getSelectedItem())));
 
+                Intent next = new Intent(MainActivity.this, MapsActivity.class);
+                startActivity(next);
             }
 
         });
