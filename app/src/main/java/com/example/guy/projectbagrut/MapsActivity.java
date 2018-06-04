@@ -68,15 +68,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         locationClient = LocationServices.getFusedLocationProviderClient(this);
-        /*
+
         locationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
-                MapsActivity.this.currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+         //       MapsActivity.this.currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
             }
         });
-        */
-        /*
+
+
         locationClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
             @Override
             public void onComplete(@NonNull Task<Location> task) {
@@ -98,38 +98,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     }
                     else
                     {
-                        MapsActivity.this.currentLocation = new LatLng(temp.getLatitude(), temp.getLongitude());
+                        //MapsActivity.this.currentLocation = new LatLng(temp.getLatitude(), temp.getLongitude());
                     }
                 }
                 else
                 {
-                    Log.d("PROBLEMO", task.getException().toString());
+                   // Log.d("PROBLEMO", task.getException().toString());
                 }
             }
         });
-        */
 
 
-        /*mRequest = LocationRequest.create()
+
+       /* mRequest = LocationRequest.create()
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(10*1000)
-                .setFastestInterval(1*1000);*/
+                .setFastestInterval(1*1000);
 
-        /*mFused.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+        mFused.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
                 if (location != null) {
                     MapsActivity.this.currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
                 }
             }
-        });*/
+        });
 
-
+*/
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
     }
+
 
     @Override
     protected void onStart() {
@@ -176,7 +177,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         return permissionState == PackageManager.PERMISSION_GRANTED;
     }
 
-    private void requestPermissions() {
+   private void requestPermissions() {
         boolean should = shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION);
         if (should) {
             Toast.makeText(getApplicationContext(), "Please Approve the Permission", Toast.LENGTH_LONG).show();
@@ -184,15 +185,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 78);
     }
 
+
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (grantResults.length > 0
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            getLastLocation();
+           // getLastLocation();
         }
     }
 
-    /*private boolean requestPermissions ()
+  /*
+    private boolean requestPermissions ()
     {
         boolean should = ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION);
 
@@ -222,14 +226,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         Intent i = getIntent();
-        getLastLocation();
+
         double lng, lat;
         lng = i.getDoubleExtra("lng", 0.0);
         lat = i.getDoubleExtra("lat", 0.0);
         String name = i.getStringExtra("name");
+
+        LatLng store = new LatLng(lat, lng);
         mMap.addMarker(new MarkerOptions()
-                .position(new LatLng(lat, lng))
+                .position(store)
                 .title(name));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(store, 10.2f));
 
 
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
@@ -313,10 +320,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // for ActivityCompat#requestPermissions for more details.
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
+
+
         locationClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
             @Override
             public void onSuccess(Location location) {
                 MapsActivity.this.currentLocation = new LatLng(location.getLatitude(), location.getLongitude());
+                LatLng pos=new LatLng(location.getLatitude(),location.getLongitude());
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom( pos , 18.0f));
+
             }
         });
 
@@ -336,4 +348,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     {
 
     }
+
+
 }

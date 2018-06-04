@@ -46,12 +46,12 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        list2.add(new Business("aharony", " dizengof 9 ", "Restaurants", 4.5, 28.0, 32.0));
-       /* list2.add(new Business("cinema city", " glilot 18 ", "Movie Theatres", 4.3,28.1, 32.1));
+       list2.add(new Business("aharony", " dizengof 9 ", "Restaurants", 4.5, 28.0, 32.0));
+        list2.add(new Business("cinema city", " glilot 18 ", "Movie Theatres", 4.3,28.1, 32.1));
         list2.add(new Business("landwer", " sokolov 20 ", "Restaurants", 5.3, 28.2, 32.2));
         list2.add(new Business("mama rasko", "yehuda halevi 34", "Pizza Places", 4.2, 28.3, 32.3));
         list2.add(new Business("dominos", " sokolov 102 ", "Pizza Places", 3.9, 28.4, 32.4));
-*/
+
 
 
         FirebaseDatabase mDatabase;
@@ -59,13 +59,13 @@ public class MainActivity extends AppCompatActivity {
         mDatabase.goOnline();
         DatabaseReference dbRef = mDatabase.getReference();
         DatabaseReference justR = dbRef.child("restaurants");
-        Log.i("", "");
+        Log.i("Shawarma", "nuggets");
 
         dbRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Business b;
-                Log.i("Started Data Upload", "");
+                Log.i("Started Data Upload", "Shawarma");
                 MainActivity.this.dataSnapshot = dataSnapshot;
                 for (DataSnapshot snap : dataSnapshot.getChildren())
                 {
