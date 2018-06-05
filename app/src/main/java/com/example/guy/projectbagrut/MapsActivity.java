@@ -80,7 +80,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onSuccess(Location location) {
                 if (location!=null)
-                {
+                {//isnt
                     Toast.makeText(getApplicationContext(), "Not Null", Toast.LENGTH_LONG).show();
                     double longtitude, latitude;
                     longtitude = location.getLongitude();
