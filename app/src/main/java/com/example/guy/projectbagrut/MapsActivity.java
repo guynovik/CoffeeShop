@@ -18,6 +18,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -43,6 +44,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LocationListener listener;
     private FusedLocationProviderClient locationProviderClient;
     private LatLng currentLocationLatLng;
+    Location currentLocation;
     private double lat, lng;
 
     Marker marker;
@@ -53,17 +55,47 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
 
 
+        lat = 18.008;
+        lng = 69.6969;
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
 
-
         //locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-
-
+        locationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                if (location!=null)
+                {
+                    Toast.makeText(getApplicationContext(), "Not Null", Toast.LENGTH_LONG).show();
+                    double longtitude, latitude;
+                    longtitude = location.getLongitude();
+                    latitude = location.getLatitude();
+                    MapsActivity.this.currentLocationLatLng = new LatLng(latitude, longtitude);
+                    mMap.addMarker(new MarkerOptions()
+                            .title("Current Location")
+                            .position(currentLocationLatLng)
+                            .snippet("This is your Current Location")
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                    );
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(MapsActivity.this.currentLocationLatLng, 10.2f));
+                }
+            }
+        });
 
         // get all loactions of stores from db and create markers
 
@@ -136,16 +168,34 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
+
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
         mMap = googleMap;
 
-
         Intent i = getIntent();
         lng = i.getDoubleExtra("lng", 0.0);
         lat = i.getDoubleExtra("lat", 0.0);
         String name = i.getStringExtra("name");
+
+        mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
+            @Override
+            public boolean onMarkerClick(Marker marker) {
+                Location buisnessLocation = new Location("App");
+                buisnessLocation.setLatitude(lat);
+                buisnessLocation.setLongitude(lng);
+                Location userLocation = new Location("App");
+                userLocation.setLatitude(currentLocationLatLng.latitude);
+                userLocation.setLongitude(currentLocationLatLng.longitude);
+                double distance = userLocation.distanceTo(buisnessLocation);
+                Toast.makeText(getApplicationContext(), "Distance to Buisness is "+distance, Toast.LENGTH_LONG).show();
+                return true;
+            }
+        });
+
+
 
        // Toast.makeText(MapsActivity.this, "lng:"+lng+", lat:" +lat+", name:" +name    , Toast.LENGTH_LONG).show();
 
@@ -153,7 +203,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addMarker(new MarkerOptions()
                 .position(store)
                 .title(name));
+
+
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(store, 10.2f));
+
+
 
 /*
         int cnt=0;
@@ -197,7 +251,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return;
         }
 
-        locationManager.requestLocationUpdates("gps", 50, 10, listener);
+        //locationManager.requestLocationUpdates("gps", 50, 10, listener);
 
     }
     /*
