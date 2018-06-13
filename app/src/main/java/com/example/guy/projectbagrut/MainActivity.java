@@ -260,22 +260,35 @@ public class MainActivity extends AppCompatActivity {
 */
                 if (list2.size()>0)
                 {
+                    ArrayList <String> names = new ArrayList<>();
+                    ArrayList <Double> longs = new ArrayList<>();
+                    ArrayList <Double> lats = new ArrayList<>();
                     String category = String.valueOf(spinner1.getSelectedItem());
                     DataSnapshot buisnessUno = dataSnapshot.child(category);
                     for (DataSnapshot b: buisnessUno.getChildren())
                     {
-                        String name;
-                        double lng, lat;
-                        name = b.getKey();
-                        lng = b.child("longitude").getValue(Double.class);
-                        lat = b.child("latitude").getValue(Double.class);
-                        Intent next = new Intent(MainActivity.this, MapsActivity.class);
-                        next.putExtra("lng", lng);
-                        next.putExtra("lat", lat);
-                        next.putExtra("name", name);
-                        startActivity(next);
-                        break;
+                        names.add(b.getKey());
+                        longs.add(b.child("longitude").getValue(Double.class));
+                        lats.add(b.child("latitude").getValue(Double.class));
                     }
+                    Intent next = new Intent(MainActivity.this, MapsActivity.class);
+                    next.putStringArrayListExtra("names", names);
+                    Double [] longis = new Double[longs.size()];
+                    longis = longs.toArray(longis);
+                    double [] exLong = convertDouble(longis);
+                    Double [] latis = new Double[lats.size()];
+                    latis = lats.toArray(latis);
+                    double [] exLat = convertDouble(latis);
+                    if (latis.length==longis.length)
+                    {
+                        next.putExtra("lng", exLong);
+                        next.putExtra("lat", exLat);
+                        startActivity(next);
+                    }
+                    /*next.putExtra("lng", lng);
+                    next.putExtra("lat", lat);
+                    next.putExtra("name", name);
+                    startActivity(next);*/
                 }
             }
 
@@ -372,6 +385,16 @@ public class MainActivity extends AppCompatActivity {
 
         lv = (ListView) findViewById(R.id.businessList);
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list1);
+    }
+
+    private double [] convertDouble (Double [] arr)
+    {
+        double [] ret = new double[arr.length];
+        for (int i = 0;i<arr.length;i++)
+        {
+            ret[i] = arr[i].doubleValue();
+        }
+        return ret;
     }
 
 }

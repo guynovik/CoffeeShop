@@ -19,6 +19,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -86,7 +87,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (task.isSuccessful()) {
                     Location location = task.getResult();
                     if (location != null) {//isnt
-                        Toast.makeText(getApplicationContext(), "Not Null", Toast.LENGTH_LONG).show();
                         double longtitude, latitude;
                         longtitude = location.getLongitude();
                         latitude = location.getLatitude();
@@ -97,7 +97,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                                 .snippet("This is your Current Location")
                                 .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
                         );
-                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(MapsActivity.this.currentLocationLatLng, 10.2f));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(MapsActivity.this.currentLocationLatLng, 14.3f));
                     }
                 } else {
                     Toast.makeText(getApplicationContext(), "Problem in data retrieving", Toast.LENGTH_LONG).show();
@@ -192,7 +192,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             @Override
             public void onSuccess(Location location) {
                 if (location != null) {//isnt
-                    Toast.makeText(getApplicationContext(), "Not Null", Toast.LENGTH_LONG).show();
                     double longtitude, latitude;
                     longtitude = location.getLongitude();
                     latitude = location.getLatitude();
@@ -203,27 +202,40 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                             .snippet("This is your Current Location")
                             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
                     );
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(MapsActivity.this.currentLocationLatLng, 10.2f));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(MapsActivity.this.currentLocationLatLng, 14.3f));
                 }
             }
         });
 
         Intent i = getIntent();
-        lng = i.getDoubleExtra("lng", 0.0);
-        lat = i.getDoubleExtra("lat", 0.0);
-        String name = i.getStringExtra("name");
+        ArrayList <String> names = i.getStringArrayListExtra("names");
+        double [] longis = i.getDoubleArrayExtra("lng");
+        double [] latis = i.getDoubleArrayExtra("lat");
+        int j;
+        for (j = 0;j<longis.length&&j<latis.length;j++)
+        {
+            mMap.addMarker(new MarkerOptions()
+                    .position(new LatLng(latis[j], longis[j]))
+                    .title(names.get(j))
+            );
+        }
 
-        mMap.addMarker(new MarkerOptions()
-                .position(new LatLng(lat, lng))
-                .title(name)
-        );
+        if (longis.length>0&&latis.length>0)
+        {
+            CameraPosition position = new CameraPosition.Builder()
+                    .target(new LatLng(latis[0], longis[0]))
+                    .zoom(1)
+                    .build();
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(position));
+        }
 
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
+                marker.showInfoWindow();
                 Location buisnessLocation = new Location("App");
-                buisnessLocation.setLatitude(lat);
-                buisnessLocation.setLongitude(lng);
+                buisnessLocation.setLatitude(marker.getPosition().latitude);
+                buisnessLocation.setLongitude(marker.getPosition().longitude);
                 Location userLocation = new Location("App");
                 userLocation.setLatitude(currentLocationLatLng.latitude);
                 userLocation.setLongitude(currentLocationLatLng.longitude);
