@@ -54,6 +54,15 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+        Button addBuisnessButton = (Button) findViewById(R.id.insertButton);
+        addBuisnessButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent addIntent = new Intent(MainActivity.this, AddBuisnessActivity.class);
+                startActivity(addIntent);
+            }
+        });
+
         /*
        list2.add(new Business("aharony", " dizengof 9 ", "Restaurants", 4.5, 1, 1));
         list2.add(new Business("cinema city", " glilot 18 ", "Movie Theatres", 4.3,28.1, 32.1));
