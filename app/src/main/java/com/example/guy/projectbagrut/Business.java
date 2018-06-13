@@ -6,6 +6,8 @@ package com.example.guy.projectbagrut;
 
 public class Business {
 
+    //Yellow
+
     private String name;
     private String address;
     protected String category;

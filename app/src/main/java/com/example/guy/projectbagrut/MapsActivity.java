@@ -27,7 +27,10 @@ import android.location.Location;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseReference;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -55,8 +58,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
 
 
-        lat = 18.008;
-        lng = 69.6969;
+        lat = 32.3423;
+        lng = 34.4533;
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -76,23 +79,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        locationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+
+        locationProviderClient.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
             @Override
-            public void onSuccess(Location location) {
-                if (location!=null)
-                {//isnt
-                    Toast.makeText(getApplicationContext(), "Not Null", Toast.LENGTH_LONG).show();
-                    double longtitude, latitude;
-                    longtitude = location.getLongitude();
-                    latitude = location.getLatitude();
-                    MapsActivity.this.currentLocationLatLng = new LatLng(latitude, longtitude);
-                    mMap.addMarker(new MarkerOptions()
-                            .title("Current Location")
-                            .position(currentLocationLatLng)
-                            .snippet("This is your Current Location")
-                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
-                    );
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(MapsActivity.this.currentLocationLatLng, 10.2f));
+            public void onComplete(@NonNull Task<Location> task) {
+                if (task.isSuccessful()) {
+                    Location location = task.getResult();
+                    if (location != null) {//isnt
+                        Toast.makeText(getApplicationContext(), "Not Null", Toast.LENGTH_LONG).show();
+                        double longtitude, latitude;
+                        longtitude = location.getLongitude();
+                        latitude = location.getLatitude();
+                        MapsActivity.this.currentLocationLatLng = new LatLng(latitude, longtitude);
+                        mMap.addMarker(new MarkerOptions()
+                                .title("Current Location")
+                                .position(currentLocationLatLng)
+                                .snippet("This is your Current Location")
+                                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                        );
+                        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(MapsActivity.this.currentLocationLatLng, 10.2f));
+                    }
+                } else {
+                    Toast.makeText(getApplicationContext(), "Problem in data retrieving", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -100,11 +108,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // get all loactions of stores from db and create markers
 
 
-
-
         // configure_button();
-
-
 
 
         listener = new LocationListener() {
@@ -118,12 +122,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 */
 
 
-
-    //            Toast.makeText(MapsActivity.this, "in locationListner"    , Toast.LENGTH_LONG).show();
+                //            Toast.makeText(MapsActivity.this, "in locationListner"    , Toast.LENGTH_LONG).show();
 
 
                 // Add a marker in Sydney and move the camera
-              //  LatLng curLoc = new LatLng(location.getLatitude(), location.getLongitude());
+                //  LatLng curLoc = new LatLng(location.getLatitude(), location.getLongitude());
 
 
                 //Convert LatLng to Location
@@ -131,9 +134,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 location.setLatitude(lat);
                 location.setLongitude(lng);
 
-                int dist = (int)storeLocation.distanceTo(location);
+                int dist = (int) storeLocation.distanceTo(location);
 
-                Toast.makeText(MapsActivity.this, "dist is:" +dist   , Toast.LENGTH_LONG).show();
+                Toast.makeText(MapsActivity.this, "dist is:" + dist, Toast.LENGTH_LONG).show();
 
             }
 
@@ -175,10 +178,45 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         mMap = googleMap;
 
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        locationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                if (location != null) {//isnt
+                    Toast.makeText(getApplicationContext(), "Not Null", Toast.LENGTH_LONG).show();
+                    double longtitude, latitude;
+                    longtitude = location.getLongitude();
+                    latitude = location.getLatitude();
+                    MapsActivity.this.currentLocationLatLng = new LatLng(latitude, longtitude);
+                    mMap.addMarker(new MarkerOptions()
+                            .title("Current Location")
+                            .position(currentLocationLatLng)
+                            .snippet("This is your Current Location")
+                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                    );
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(MapsActivity.this.currentLocationLatLng, 10.2f));
+                }
+            }
+        });
+
         Intent i = getIntent();
         lng = i.getDoubleExtra("lng", 0.0);
         lat = i.getDoubleExtra("lat", 0.0);
         String name = i.getStringExtra("name");
+
+        mMap.addMarker(new MarkerOptions()
+                .position(new LatLng(lat, lng))
+                .title(name)
+        );
 
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
@@ -199,14 +237,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
        // Toast.makeText(MapsActivity.this, "lng:"+lng+", lat:" +lat+", name:" +name    , Toast.LENGTH_LONG).show();
 
-        LatLng store = new LatLng(lat, lng);
+        /*LatLng store = new LatLng(lat, lng);
         mMap.addMarker(new MarkerOptions()
                 .position(store)
                 .title(name));
 
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(store, 10.2f));
-
+*\
 
 
 /*
@@ -283,4 +321,5 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
     }
+
 }

@@ -1,5 +1,6 @@
 package com.example.guy.projectbagrut;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
@@ -44,6 +45,14 @@ public class MainActivity extends AppCompatActivity {
         list1 = new ArrayList<>();
         list2 = new ArrayList<>();
 
+        Button buisButton = (Button) findViewById(R.id.updateButton);
+        buisButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateBuisness();
+            }
+        });
+
 
         /*
        list2.add(new Business("aharony", " dizengof 9 ", "Restaurants", 4.5, 1, 1));
@@ -66,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Business b;
-                Log.i("Started Data Upload", "Shawarma");
+                Log.i("Started Data Upload", "");
                 MainActivity.this.dataSnapshot = dataSnapshot;
                 for (DataSnapshot snap : dataSnapshot.getChildren())
                 {
@@ -79,7 +88,14 @@ public class MainActivity extends AppCompatActivity {
                             name = shot.getKey();
                             address = shot.child("address").getValue(String.class);
                             //category = shot.child("category").getValue(String.class);
-                            rating = shot.child("rating").getValue(Double.class);
+                            if (shot.child("rating").getValue(Double.class)!=null)
+                            {
+                                rating = shot.child("rating").getValue(Double.class);
+                            }
+                            else
+                            {
+                                rating = 0;
+                            }
                             lng = shot.child("longitude").getValue(Double.class);
                             lat = shot.child("latitude").getValue(Double.class);
                             b = new Business(name, address, "", rating, lng, lat);
@@ -244,16 +260,23 @@ public class MainActivity extends AppCompatActivity {
 */
                 if (list2.size()>0)
                 {
-                     Business b= list2.get(0);//Replace with Distance Buisness
-                    Intent next = new Intent(MainActivity.this, MapsActivity.class);
-                    next.putExtra("lng", b.getLng());
-                    next.putExtra("lat", b.getLat());
-                    next.putExtra("name", b.getName());
-                    startActivity(next);
+                    String category = String.valueOf(spinner1.getSelectedItem());
+                    DataSnapshot buisnessUno = dataSnapshot.child(category);
+                    for (DataSnapshot b: buisnessUno.getChildren())
+                    {
+                        String name;
+                        double lng, lat;
+                        name = b.getKey();
+                        lng = b.child("longitude").getValue(Double.class);
+                        lat = b.child("latitude").getValue(Double.class);
+                        Intent next = new Intent(MainActivity.this, MapsActivity.class);
+                        next.putExtra("lng", lng);
+                        next.putExtra("lat", lat);
+                        next.putExtra("name", name);
+                        startActivity(next);
+                        break;
+                    }
                 }
-
-
-
             }
 
         });
@@ -280,10 +303,75 @@ public class MainActivity extends AppCompatActivity {
         adapter.notifyDataSetChanged();
     }
 
+    private void updateBuisness ()
+    {
+
+        final ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setMessage("Loading Buisnesses");
+        dialog.show();
+        FirebaseDatabase mDatabase;
+        mDatabase = FirebaseDatabase.getInstance();
+        mDatabase.goOnline();
+        DatabaseReference dbRef = mDatabase.getReference();
+        DatabaseReference justR = dbRef.child("restaurants");
+        dbRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Business b;
+                Log.i("Started Data Upload", "");
+                MainActivity.this.dataSnapshot = dataSnapshot;
+                for (DataSnapshot snap : dataSnapshot.getChildren())
+                {
+                    try {
+                        for (DataSnapshot shot : snap.getChildren()) {
+                            String name, address, category;
+                            double rating, lng, lat;
+                            name = shot.getKey();
+                            address = shot.child("address").getValue(String.class);
+                            //category = shot.child("category").getValue(String.class);
+                            if (shot.child("rating").getValue(Double.class)!=null)
+                            {
+                                rating = shot.child("rating").getValue(Double.class);
+                            }
+                            else
+                            {
+                                rating = 0;
+                            }
+                            lng = shot.child("longitude").getValue(Double.class);
+                            lat = shot.child("latitude").getValue(Double.class);
+                            b = new Business(name, address, "", rating, lng, lat);
+                            MainActivity.this.list2.add(b);
+                        }
+                        dialog.dismiss();
+                    }
+                    catch(Exception e) {
+                        e.printStackTrace();
+                        // expected output: SyntaxError: unterminated string literal
+                        // Note - error messages will vary depending on browser
+                    }
+                }
+                finishHim();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.i("Error", databaseError.toString());
+                dialog.dismiss();
+            }
+        });
+
+
+    }
+
+    public void finishHim ()
+    {
+        for (Business b : list2)
+        {
+            list1.add(b.toString());
+        }
+
+        lv = (ListView) findViewById(R.id.businessList);
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list1);
+    }
+
 }
-
-/*
-class GetPlacesTask extends AsyncTask <Object, Integer, ArrayList<>>
-{
-
-}*/
