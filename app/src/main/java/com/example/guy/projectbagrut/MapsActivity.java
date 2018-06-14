@@ -47,9 +47,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LocationManager locationManager;
     private LocationListener listener;
     private FusedLocationProviderClient locationProviderClient;
-    private LatLng currentLocationLatLng;
+    public LatLng currentLocationLatLng;
     Location currentLocation;
     private double lat, lng;
+    public double lat1, lng1;
+    double longtitude, latitude;
 
     Marker marker;
 
@@ -59,7 +61,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         setContentView(R.layout.activity_maps);
 
 
-        lat = 32.3423;
+      lat = 32.3423;
         lng = 34.4533;
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -87,7 +89,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 if (task.isSuccessful()) {
                     Location location = task.getResult();
                     if (location != null) {//isnt
-                        double longtitude, latitude;
+
                         longtitude = location.getLongitude();
                         latitude = location.getLatitude();
                         MapsActivity.this.currentLocationLatLng = new LatLng(latitude, longtitude);
@@ -196,6 +198,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     longtitude = location.getLongitude();
                     latitude = location.getLatitude();
                     MapsActivity.this.currentLocationLatLng = new LatLng(latitude, longtitude);
+
+                    lat1 = currentLocationLatLng.latitude;
+                    lng1 = currentLocationLatLng.longitude;
+
+                    //Toast.makeText(MapsActivity.this, "latitude" +currentLocationLatLng.latitude+ ", longtitude" +currentLocationLatLng.longitude  , Toast.LENGTH_LONG).show();
+
+
+
                     mMap.addMarker(new MarkerOptions()
                             .title("Current Location")
                             .position(currentLocationLatLng)
@@ -208,16 +218,43 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
 
         Intent i = getIntent();
+        double dis = i.getDoubleExtra("dis", 0.000);
         ArrayList <String> names = i.getStringArrayListExtra("names");
         double [] longis = i.getDoubleArrayExtra("lng");
         double [] latis = i.getDoubleArrayExtra("lat");
         int j;
+        Location buisnessLocation;
         for (j = 0;j<longis.length&&j<latis.length;j++)
         {
+
+
+            /*
+            Location buisnessLocation1 = new Location("App1");
+            buisnessLocation1.setLatitude(latis[j]);
+            buisnessLocation1.setLongitude(longis[j]);
+            Location userLocation1 = new Location("App1");
+            userLocation1.setLatitude(latitude );
+            userLocation1.setLongitude(longtitude);
+            double distance1 = userLocation1.distanceTo(buisnessLocation1);
+
+            Toast.makeText(MapsActivity.this, "latitude" +lat1+ ", longtitude" +lng1  , Toast.LENGTH_LONG).show();
+
+         //   Toast.makeText(MapsActivity.this, "latitude" +latitude+ ", longtitude" +longtitude   , Toast.LENGTH_LONG).show();
+
+
+            if (dis == -1 || dis > distance1)*/
+
+            /*buisnessLocation = new Location("App");
+            buisnessLocation.setLatitude(latis[j]);
+            buisnessLocation.setLongitude(longis[j]);
+            double distToBuisness = buisnessLocation.distanceTo(currentLocation);*/
+
+
             mMap.addMarker(new MarkerOptions()
                     .position(new LatLng(latis[j], longis[j]))
-                    .title(names.get(j))
-            );
+                    .title(names.get(j)));
+
+
         }
 
         if (longis.length>0&&latis.length>0)

@@ -56,7 +56,7 @@ public class AddBuisnessActivity extends AppCompatActivity {
                     Location location = task.getResult();
                     if (location!=null)
                     {
-                        AddBuisnessActivity.this.locationLatLng = new LatLng(location.getLatitude(), location.getLongitude());
+                        AddBuisnessActivity.this.locationLatLng = new LatLng(location.getLatitude()+0.001, location.getLongitude()+0.001);
                     }
                     else
                     {
@@ -88,7 +88,7 @@ public class AddBuisnessActivity extends AppCompatActivity {
                 newBuisnessRef.child("address").setValue(address);
                 newBuisnessRef.child("latitude").setValue(locationLatLng.latitude);
                 newBuisnessRef.child("longitude").setValue(locationLatLng.longitude);
-                Toast.makeText(getApplicationContext(), "Buisness Added Successfully", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Business Added Successfully", Toast.LENGTH_SHORT).show();
                 Intent back = new Intent(AddBuisnessActivity.this, MainActivity.class);
                 startActivity(back);
             }

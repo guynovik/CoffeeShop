@@ -2,11 +2,17 @@ package com.example.guy.projectbagrut;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
@@ -14,10 +20,15 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -29,12 +40,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     private Spinner spinner1;
-    private Button btnSubmit;
+    private Button btnSubmit, btnDistance;
     private ArrayList<String> list1;
     private ArrayList<Business> list2;
     private ArrayAdapter<String> adapter;
     private ListView lv;
+    private EditText editTextDistance;
     private DataSnapshot dataSnapshot;
+    private Location currentLocation;
+    private FusedLocationProviderClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,10 +60,45 @@ public class MainActivity extends AppCompatActivity {
         list2 = new ArrayList<>();
 
         Button buisButton = (Button) findViewById(R.id.updateButton);
+        editTextDistance = (EditText) findViewById(R.id.editTextDistance);
         buisButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 updateBuisness();
+            }
+        });
+
+        client = LocationServices.getFusedLocationProviderClient(this);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        client.getLastLocation().addOnCompleteListener(new OnCompleteListener<Location>() {
+            @Override
+            public void onComplete(@NonNull Task<Location> task)
+            {
+                if (task.isSuccessful())
+                {
+                    Location location = task.getResult();
+                    if (location!=null)
+                    {
+                        MainActivity.this.currentLocation = location;
+                    }
+                    else
+                    {
+                        Toast.makeText(getApplicationContext(), "Problem with the location retrieving", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                else
+                {
+                    Toast.makeText(getApplicationContext(), "Problem with the location retrieving", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -134,8 +183,8 @@ public class MainActivity extends AppCompatActivity {
             list1.add(b.toString());
         }
 
-        lv = (ListView) findViewById(R.id.businessList);
-       adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list1);
+      //  lv = (ListView) findViewById(R.id.businessList);
+      // adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list1);
 
 
 
@@ -162,111 +211,42 @@ public class MainActivity extends AppCompatActivity {
 
         btnSubmit = (Button) findViewById(R.id.btnSubmit);
 
+        btnDistance = (Button) findViewById(R.id.btnSubmit2);
+
+
+
+        btnDistance.setOnClickListener(new OnClickListener() {
+
+                                                   @Override
+                                                   public void onClick (View v){
+
+                                                       showMaps(Double.parseDouble(editTextDistance.getText().toString()));
+                                                   }
+
+                                               });
+
+
+
         btnSubmit.setOnClickListener(new OnClickListener() {
 
-            @Override
-            public void onClick(View v) {
+                                         @Override
+                                         public void onClick(View v) {
 
-                Toast.makeText(MainActivity.this,
-                        "Choice successful  " +
-                                "\nSpinner 1 : "+ String.valueOf(spinner1.getSelectedItem()),
-                        Toast.LENGTH_SHORT).show();
-                screen(String.valueOf((spinner1.getSelectedItem())));
+                                             showMaps(-1);
 
-/*
+                                             /*
 
-                FirebaseDatabase mDatabase;
-                mDatabase = FirebaseDatabase.getInstance();
-
-                DatabaseReference dbRef = mDatabase.getReference();
-                DatabaseReference justR = dbRef.child("coffee places");
-                Log.i("Shawarma", "nuggets");
-                mDatabase.goOnline();
-                dbRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        Business b;
-                        Log.i("Started Data Upload", "Shawarma");
-                        MainActivity.this.dataSnapshot = dataSnapshot;
-                        for (DataSnapshot snap : dataSnapshot.getChildren())
-                        {
-                            try {
-
-
-                                for (DataSnapshot shot : snap.getChildren()) {
-                                    String name, address, category;
-                                    double rating, lng, lat;
-                                    name = shot.getKey();
-                                    address = shot.child("address").getValue(String.class);
-                                    //category = shot.child("category").getValue(String.class);
-                                    rating = shot.child("rating").getValue(Double.class);
-                                    lng = shot.child("longitude").getValue(Double.class);
-                                    lat = shot.child("latitude").getValue(Double.class);
-                                    b = new Business(name, address, "", rating, lng, lat);
-                                    MainActivity.this.list2.add(b);
-                                }
-                            }
-                            catch(Exception e) {
-                                e.printStackTrace();
-                                // expected output: SyntaxError: unterminated string literal
-                                // Note - error messages will vary depending on browser
-                            }
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.i("Error", databaseError.toString());
-                    }
-                });
-*/
-
-
-/*
-                FirebaseDatabase mDatabase;
-                mDatabase = FirebaseDatabase.getInstance();
-
-                mDatabase.goOnline();
-
-                DatabaseReference dbRef = mDatabase.getReference();
-                DatabaseReference justR = dbRef.child("restaurants");
-                Log.i("Shawarma", "nuggets");
-                mDatabase.goOnline();
-
-                        Business b;
-                        Log.i("Started Data Upload", "Shawarma");
-                        MainActivity.this.dataSnapshot = dataSnapshot;
-                        for (DataSnapshot snap : dataSnapshot.getChildren()) {
-                            try {
-
-
-                                for (DataSnapshot shot : snap.getChildren()) {
-                                    String name, address, category;
-                                    double rating, lng, lat;
-                                    name = shot.getKey();
-                                    address = shot.child("address").getValue(String.class);
-                                    //category = shot.child("category").getValue(String.class);
-                                    rating = shot.child("rating").getValue(Double.class);
-                                    lng = shot.child("longitude").getValue(Double.class);
-                                    lat = shot.child("latitude").getValue(Double.class);
-                                    b = new Business(name, address, "", rating, lng, lat);
-                                    MainActivity.this.list2.add(b);
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                // expected output: SyntaxError: unterminated string literal
-                                // Note - error messages will vary depending on browser
-                            }
-                        }
+                                             Toast.makeText(MainActivity.this,
+                                                     "Choice successful  " +
+                                                             "\nSpinner 1 : " + String.valueOf(spinner1.getSelectedItem()),
+                                                     Toast.LENGTH_SHORT).show();
+                                             screen(String.valueOf((spinner1.getSelectedItem())));
 
 
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.i("Error", databaseError.toString());
-                    }
-                });
-*/
+
+
+
                 if (list2.size()>0)
                 {
                     ArrayList <String> names = new ArrayList<>();
@@ -294,15 +274,65 @@ public class MainActivity extends AppCompatActivity {
                         next.putExtra("lat", exLat);
                         startActivity(next);
                     }
+
+                }
+                */
+            }
+
+
+        });
+
+
+    }
+
+    public void showMaps(double dis) {
+
+        Toast.makeText(MainActivity.this,
+                "Choice successful  " +
+                        "\nSpinner 1 : " + String.valueOf(spinner1.getSelectedItem()),
+                Toast.LENGTH_SHORT).show();
+        screen(String.valueOf((spinner1.getSelectedItem())));
+        if (list2.size()>0)
+        {
+            ArrayList <String> names = new ArrayList<>();
+            ArrayList <Double> longs = new ArrayList<>();
+            ArrayList <Double> lats = new ArrayList<>();
+            String category = String.valueOf(spinner1.getSelectedItem());
+            DataSnapshot buisnessUno = dataSnapshot.child(category);
+            for (DataSnapshot b: buisnessUno.getChildren())
+            {
+                names.add(b.getKey());
+                Location buisLocation = new Location("App");
+                buisLocation.setLongitude(b.child("longitude").getValue(Double.class));
+                buisLocation.setLatitude(b.child("latitude").getValue(Double.class));
+                double distance = buisLocation.distanceTo(currentLocation);
+                Log.i("Distance", distance+"");
+                if (distance<dis||dis==-1)
+                {
+                    longs.add(b.child("longitude").getValue(Double.class));
+                    lats.add(b.child("latitude").getValue(Double.class));
+                }
+            }
+            Intent next = new Intent(MainActivity.this, MapsActivity.class);
+            next.putExtra("dis",dis);
+            next.putStringArrayListExtra("names", names);
+            Double [] longis = new Double[longs.size()];
+            longis = longs.toArray(longis);
+            double [] exLong = convertDouble(longis);
+            Double [] latis = new Double[lats.size()];
+            latis = lats.toArray(latis);
+            double [] exLat = convertDouble(latis);
+            if (latis.length==longis.length)
+            {
+                next.putExtra("lng", exLong);
+                next.putExtra("lat", exLat);
+                startActivity(next);
+            }
                     /*next.putExtra("lng", lng);
                     next.putExtra("lat", lat);
                     next.putExtra("name", name);
                     startActivity(next);*/
-                }
-            }
-
-        });
-
+        }
 
     }
 
@@ -318,11 +348,14 @@ public class MainActivity extends AppCompatActivity {
                 //HeAra
             }
         }
+
+        /*
         adapter=new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,filtered);
 
         adapter.notifyDataSetChanged();
         lv.setAdapter(adapter);
         adapter.notifyDataSetChanged();
+        */
     }
 
     private void updateBuisness ()
@@ -392,8 +425,8 @@ public class MainActivity extends AppCompatActivity {
             list1.add(b.toString());
         }
 
-        lv = (ListView) findViewById(R.id.businessList);
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list1);
+      //  lv = (ListView) findViewById(R.id.businessList);
+       // adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, list1);
     }
 
     private double [] convertDouble (Double [] arr)
